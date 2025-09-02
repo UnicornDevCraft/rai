@@ -1,20 +1,47 @@
-[tool.poetry]
+[project]
 name = "template-matching-api"
-version = "0.1.0"
+version = "0.2.0"
 description = "API for template matching management"
-authors = ["lukas.bauer <lukas.bauer@resistant.ai>"]
-readme = "README.md"
+authors = [{ email = "lukas.bauer@resistant.ai" }]
+requires-python = "==3.12.*"
 
-[tool.poetry.dependencies]
-python = "^3.11"
-fastapi = "^0.111.1"
-pydantic = "^2.8.2"
-sqlalchemy = "^2.0.31"
+dependencies = [
+    "fastapi[all] >=0.111.1,<1",
+    "pydantic >=2,<3",
+    "SQLAlchemy >=2.0.34,<3",
+]
 
 
-[tool.poetry.group.dev.dependencies]
-pytest = "^8.2.2"
+[project.optional-dependencies]
+typing = [
+    "mypy>=1,<2",
+    "pip>=24",
+]
 
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+
+[tool.uv]
+dev-dependencies = [
+    "pytest >=8,<9",
+]
+
+
+[tool.mypy]
+ignore_missing_imports = false
+# If you compare incomparable things, its most likely bug
+#strict_equality = true
+disallow_untyped_defs = true
+# Use Any type annotation instead
+disallow_incomplete_defs = true
+# So you set type for generics.
+#disallow_any_generics = true
+warn_return_any = true
+warn_unreachable = true
+warn_redundant_casts = true
+
+# Unfortunately these are off so that we can run mypy locally (for some reason they sometimes differ whether
+# typing is there or not).
+warn_unused_ignores = false
+
+plugins = [
+    "pydantic.mypy"
+]
