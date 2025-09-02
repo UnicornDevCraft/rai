@@ -29,6 +29,7 @@ class DocumentTemplate(Base):
             uselist=True,
             back_populates="document_template",
             passive_deletes=True,
+            overlaps="template_matching_jobs",
         )
     )
     template_matching_jobs: Mapped[list["TemplateMatchingJob"]] = relationship(
@@ -36,6 +37,7 @@ class DocumentTemplate(Base):
         secondary="template_matching_job_templates",
         uselist=True,
         back_populates="document_templates",
+        overlaps="template_matching_job_templates",
     )
 
 
@@ -55,6 +57,7 @@ class TemplateMatchingJob(Base):
             uselist=True,
             back_populates="template_matching_job",
             passive_deletes=True,
+            overlaps="document_templates",
         )
     )
     document_templates: Mapped[list[DocumentTemplate]] = relationship(
@@ -62,6 +65,7 @@ class TemplateMatchingJob(Base):
         secondary="template_matching_job_templates",
         uselist=True,
         back_populates="template_matching_jobs",
+        overlaps="template_matching_job_templates",
     )
 
     document_template_ids = association_proxy(
@@ -91,9 +95,11 @@ class TemplateMatchingJobTemplate(Base):
         TemplateMatchingJob,
         uselist=False,
         back_populates="template_matching_job_templates",
+        viewonly=True,
     )
     document_template: Mapped[DocumentTemplate] = relationship(
         DocumentTemplate,
         uselist=False,
         back_populates="template_matching_job_templates",
+        viewonly=True,
     )
