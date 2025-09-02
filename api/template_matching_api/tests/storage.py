@@ -12,7 +12,7 @@ class InMemoryTemplateStorage:
 
         return file_bytes
 
-    def delete(self, template_id) -> None:
+    def delete(self, template_id: int) -> None:
         if template_id in DT_STORAGE:
             del DT_STORAGE[template_id]
         else:

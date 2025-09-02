@@ -1,6 +1,5 @@
 import json
 from datetime import datetime
-from typing import cast
 
 from fastapi import APIRouter, Depends, status, UploadFile, File, Form, HTTPException
 from fastapi.responses import Response
@@ -54,7 +53,7 @@ def create_document_template(
     session.add(template)
     session.flush()
     session.refresh(template)
-    template_id = cast(int, template.id)
+    template_id = template.id
     template_storage = DocumentTemplateStorage()
     template_storage.save(template_id, file.file.read())
     return DocumentTemplateOut.model_validate(template)
@@ -88,6 +87,8 @@ def upload_document_template(
     )
     if template is None:
         raise HTTPException(status_code=404)
+    if file.filename is None:
+        raise ValueError("Cannot determine uploaded file filename")
 
     template.template_filename = file.filename
     template.template_file_type = file.headers.get("Content-Type", "image")
