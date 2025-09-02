@@ -24,7 +24,7 @@ def submit_job(job: TemplateMatchingJob) -> None:
     job.job_state = random.choice(list(JobState))
 
 
-def mock_job_results(job: TemplateMatchingJobResults) -> TemplateMatchingJobResults:
+def mock_job_results(job: TemplateMatchingJob) -> TemplateMatchingJobResults:
     template_ids = job.document_template_ids
     next_sample_id = 1
     template_results: list[TemplateMatchingJobTempLateResults] = []

@@ -5,7 +5,7 @@ STORAGE_LOCATION = Path(os.path.realpath(__file__)).parents[1] / "storage"
 
 
 class DocumentTemplateStorage:
-    def __init__(self):
+    def __init__(self) -> None:
         # This is just to mimic storage like it would be on s3, where you just store bytes, so keeping the filename and file type in storage is not possible
         self.file_location = STORAGE_LOCATION / "templates"
         self.file_name = "template_file"
@@ -21,5 +21,5 @@ class DocumentTemplateStorage:
     def load(self, template_id: int) -> bytes:
         return self._get_location_for_template(template_id).read_bytes()
 
-    def delete(self, template_id) -> None:
+    def delete(self, template_id: int) -> None:
         self._get_location_for_template(template_id).unlink()
