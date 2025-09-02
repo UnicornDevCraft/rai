@@ -11,10 +11,9 @@ from template_matching_api.api_models.template_matching_job import (
     TemplateMatchingJobIn,
     JobState,
     TemplateMatchingJobResults,
-    TemplateMatchingJobTempLateResults,
-    SampleResult,
 )
 from template_matching_api.db_model import TemplateMatchingJob
+from template_matching_api.jobs.template_matching_job import mock_job_results
 
 router = APIRouter()
 
@@ -22,29 +21,6 @@ router = APIRouter()
 def submit_job(job: TemplateMatchingJob) -> None:
     job.job_id = str(uuid.uuid4())
     job.job_state = random.choice(list(JobState))
-
-
-def mock_job_results(job: TemplateMatchingJob) -> TemplateMatchingJobResults:
-    template_ids = job.document_template_ids
-    next_sample_id = 1
-    template_results: list[TemplateMatchingJobTempLateResults] = []
-    for template_id in template_ids:
-        num_samples = random.randint(1, 100)
-        sample_results: list[SampleResult] = []
-        for _ in range(num_samples):
-            sample_results.append(
-                SampleResult(sample_id=next_sample_id, score=random.random())
-            )
-            next_sample_id += 1
-        template_results.append(
-            TemplateMatchingJobTempLateResults(
-                template_id=template_id, sample_results=sample_results
-            )
-        )
-    return TemplateMatchingJobResults(
-        results_per_template=template_results,
-        total_run_time=random.randint(1_000, 10_000),
-    )
 
 
 @router.get("/", status_code=status.HTTP_200_OK)
