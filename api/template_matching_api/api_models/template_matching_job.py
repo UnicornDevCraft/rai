@@ -4,6 +4,7 @@ from enum import StrEnum
 from pydantic import BaseModel, ConfigDict
 
 from template_matching_api.api_models.document_template import DocumentTemplateOut
+from template_matching_api.api_models.sample import SampleResult, ExtendedSampleResult
 
 
 class JobState(StrEnum):
@@ -28,14 +29,9 @@ class TemplateMatchingJobOut(BaseModel):
     document_templates: list[DocumentTemplateOut]
 
 
-class SampleResult(BaseModel):
-    sample_id: int
-    score: float
-
-
 class TemplateMatchingJobTempLateResults(BaseModel):
     template_id: int
-    sample_results: list[SampleResult]
+    sample_results: list[SampleResult] | list[ExtendedSampleResult]
 
 
 class TemplateMatchingJobResults(BaseModel):

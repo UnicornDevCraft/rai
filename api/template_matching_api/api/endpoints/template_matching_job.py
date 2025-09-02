@@ -6,13 +6,13 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session, joinedload
 
 from template_matching_api.api.dependencies import get_session
+from template_matching_api.api_models.sample import SampleResult
 from template_matching_api.api_models.template_matching_job import (
     TemplateMatchingJobOut,
     TemplateMatchingJobIn,
     JobState,
     TemplateMatchingJobResults,
     TemplateMatchingJobTempLateResults,
-    SampleResult,
 )
 from template_matching_api.db_model import TemplateMatchingJob
 
