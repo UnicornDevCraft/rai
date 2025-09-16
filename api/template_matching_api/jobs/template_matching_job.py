@@ -1,6 +1,5 @@
 import random
 from datetime import date, timedelta
-from typing import Any
 
 from template_matching_api.api_models.template_matching_job import (
     TemplateMatchingJobResults,
@@ -11,6 +10,7 @@ from template_matching_api.api_models.sample import (
     SampleResult,
     ExtendedSampleResult,
 )
+from template_matching_api.api_models.data_specification import DataSpecification
 from template_matching_api.db_model import TemplateMatchingJob
 
 
@@ -38,30 +38,34 @@ def mock_job_results(job: TemplateMatchingJob) -> TemplateMatchingJobResults:
 
 
 def mock_job_results_with_data_spec(
-    job: TemplateMatchingJob, data_specification: dict[str, Any]
+    job: TemplateMatchingJob, data_specification: DataSpecification
 ) -> TemplateMatchingJobResults:
+    """
+    Generate mock results for a template matching job based on the given data specification.
+
+    Args:
+        job: TemplateMatchingJob containing template IDs.
+        data_specification: DataSpecificationModel with optional file_type and date range.
+
+    Returns:
+        TemplateMatchingJobResults with random sample results per template.
+    """
     # This would normally accept Pydantic model with data specification instead of plain dict, but I did not want to prepare the model for the task
     template_ids = job.document_template_ids
     next_sample_id = 1
     template_results: list[TemplateMatchingJobTempLateResults] = []
 
     available_file_types: list[FileType] = (
-        [FileType[data_specification["file_type"]]]
-        if "file_type" in data_specification
+        [data_specification.file_type]
+        if data_specification.file_type
         else list(FileType)
     )
-    date_from = (
-        data_specification["date_from"]
-        if "date_from" in data_specification
-        else date.today()
-    )
-    date_to = (
-        data_specification["date_to"]
-        if "date_to" in data_specification
-        else date.today()
-    )
+    date_from = data_specification.date_from or date.today()
+    date_to = data_specification.date_to or date.today()
+
     num_days = (date_to - date_from + timedelta(days=1)).days
     available_dates = [date_from + timedelta(days=day) for day in range(num_days)]
+
     for template_id in template_ids:
         num_samples = random.randint(1, 100)
         sample_results: list[SampleResult] = []

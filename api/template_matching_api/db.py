@@ -19,7 +19,7 @@ def get_db() -> Engine:
 
 
 @contextmanager
-def session_scope(session_maker: sessionmaker) -> Generator[Session, None, None]:
+def session_scope(session_maker: sessionmaker[Session]) -> Generator[Session, None, None]:
     session = session_maker()
     try:
         yield session

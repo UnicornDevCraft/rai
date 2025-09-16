@@ -1,2 +1,6 @@
 storage/
 .idea/
+.venv
+.mypy_cache
+__pycache__/
+.pytest_cache/

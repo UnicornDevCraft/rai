@@ -116,7 +116,7 @@ def download_document_template(
 
 @router.delete("/{template_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_document_template(
-    template_id: int, session_maker: sessionmaker = Depends(get_session_maker)
+    template_id: int, session_maker: sessionmaker[Session] = Depends(get_session_maker)
 ) -> None:
     try:
         with session_scope(session_maker) as session:

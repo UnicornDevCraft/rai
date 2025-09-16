@@ -29,12 +29,12 @@ def engine() -> Engine:
 
 
 @pytest.fixture
-def sessionmaker_f(engine: Engine) -> sessionmaker:
+def sessionmaker_f(engine: Engine) -> sessionmaker[Session]:
     return sessionmaker(bind=engine)
 
 
 @pytest.fixture
-def session(sessionmaker_f: sessionmaker) -> YieldFixtureResult[Session]:
+def session(sessionmaker_f: sessionmaker[Session]) -> YieldFixtureResult[Session]:
     session = sessionmaker_f()
     yield session
     session.rollback()
@@ -42,7 +42,7 @@ def session(sessionmaker_f: sessionmaker) -> YieldFixtureResult[Session]:
 
 
 @pytest.fixture(scope="function")
-def app(sessionmaker_f: sessionmaker) -> YieldFixtureResult[FastAPI]:
+def app(sessionmaker_f: sessionmaker[Session]) -> YieldFixtureResult[FastAPI]:
     import template_matching_api.main as entrypoint
     import template_matching_api.api.dependencies as dependencies
 
@@ -59,7 +59,7 @@ def client(app: FastAPI) -> YieldFixtureResult[TestClient]:
 
 @pytest.fixture(scope="function", autouse=True)
 def with_test_db(
-    sessionmaker_f: sessionmaker, monkeypatch: MonkeyPatch
+    sessionmaker_f: sessionmaker[Session], monkeypatch: MonkeyPatch
 ) -> YieldFixtureResult[None]:
     with monkeypatch.context() as m:
         m.setattr("template_matching_api.db.get_db", lambda: sessionmaker_f)

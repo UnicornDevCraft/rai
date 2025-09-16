@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import Integer, String, DateTime, ForeignKey, func
+from sqlalchemy import Integer, String, DateTime, ForeignKey, func, JSON
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.orm import relationship, DeclarativeBase, Mapped, mapped_column
 
@@ -41,6 +41,22 @@ class DocumentTemplate(Base):
     )
 
 
+class Workspace(Base):
+    __tablename__ = "workspaces"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    name: Mapped[str] = mapped_column(String, nullable=False)
+    data_specification: Mapped[dict] = mapped_column(JSON, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, server_default=func.now()
+    )
+    template_matching_jobs: Mapped[list["TemplateMatchingJob"]] = relationship(
+        "TemplateMatchingJob",
+        back_populates="workspace",
+        passive_deletes=True
+    )
+
+
 class TemplateMatchingJob(Base):
     __tablename__ = "template_matching_jobs"
 
@@ -58,6 +74,7 @@ class TemplateMatchingJob(Base):
             back_populates="template_matching_job",
             passive_deletes=True,
             overlaps="document_templates",
+            lazy="selectin",
         )
     )
     document_templates: Mapped[list[DocumentTemplate]] = relationship(
@@ -74,6 +91,16 @@ class TemplateMatchingJob(Base):
         creator=lambda template_id: TemplateMatchingJobTemplate(
             document_template_id=template_id
         ),
+    )
+
+    workspace_id: Mapped[int | None] = mapped_column(
+        ForeignKey("workspaces.id", ondelete="CASCADE"),
+        nullable=True,
+    )
+    workspace: Mapped[Workspace] = relationship(
+        Workspace,
+        back_populates="template_matching_jobs",
+        passive_deletes=True
     )
 
 
