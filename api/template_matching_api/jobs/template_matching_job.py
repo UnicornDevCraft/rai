@@ -1,5 +1,5 @@
 import random
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 
 from template_matching_api.api_models.template_matching_job import (
     TemplateMatchingJobResults,
@@ -64,7 +64,11 @@ def mock_job_results_with_data_spec(
     date_to = data_specification.date_to or date.today()
 
     num_days = (date_to - date_from + timedelta(days=1)).days
-    available_dates = [date_from + timedelta(days=day) for day in range(num_days)]
+    available_dates = [
+        datetime.combine(date_from + timedelta(days=day), datetime.min.time())
+        for day in range(num_days)
+    ]
+
 
     for template_id in template_ids:
         num_samples = random.randint(1, 100)

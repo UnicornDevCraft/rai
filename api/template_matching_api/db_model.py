@@ -1,3 +1,4 @@
+from typing import Any
 from datetime import datetime
 
 from sqlalchemy import Integer, String, DateTime, ForeignKey, func, JSON
@@ -46,7 +47,7 @@ class Workspace(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     name: Mapped[str] = mapped_column(String, nullable=False)
-    data_specification: Mapped[dict] = mapped_column(JSON, nullable=False)
+    data_specification: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, server_default=func.now()
     )
