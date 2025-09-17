@@ -40,16 +40,6 @@ def mock_job_results(job: TemplateMatchingJob) -> TemplateMatchingJobResults:
 def mock_job_results_with_data_spec(
     job: TemplateMatchingJob, data_specification: DataSpecification
 ) -> TemplateMatchingJobResults:
-    """
-    Generate mock results for a template matching job based on the given data specification.
-
-    Args:
-        job: TemplateMatchingJob containing template IDs.
-        data_specification: DataSpecificationModel with optional file_type and date range.
-
-    Returns:
-        TemplateMatchingJobResults with random sample results per template.
-    """
     # This would normally accept Pydantic model with data specification instead of plain dict, but I did not want to prepare the model for the task
     template_ids = job.document_template_ids
     next_sample_id = 1

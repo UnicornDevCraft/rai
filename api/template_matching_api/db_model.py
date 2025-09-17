@@ -75,7 +75,6 @@ class TemplateMatchingJob(Base):
             back_populates="template_matching_job",
             passive_deletes=True,
             overlaps="document_templates",
-            lazy="selectin",
         )
     )
     document_templates: Mapped[list[DocumentTemplate]] = relationship(
