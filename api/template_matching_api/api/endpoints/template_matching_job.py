@@ -45,6 +45,9 @@ def create_template_matching_job(
     template_matching_job_in: TemplateMatchingJobIn,
     session: Session = Depends(get_session),
 ) -> TemplateMatchingJobOut:
+    if template_matching_job_in.workspace_id is None:
+        raise HTTPException(status_code=404, detail="Workspace not found")
+    
     workspace = session.get(Workspace, template_matching_job_in.workspace_id)
     if workspace is None:
         raise HTTPException(status_code=404, detail="Workspace not found")

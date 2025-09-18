@@ -1,5 +1,6 @@
 import random
 import uuid
+from datetime import datetime
 
 import pytest
 from sqlalchemy import select
@@ -79,15 +80,53 @@ def test_create_template_matching_job(
     ] == template_ids
 
 
+def test_create_template_matching_job_without_workspace(
+    with_document_templates: list[DocumentTemplate],
+    client: TestClient
+) -> None:
+    template_ids = [template.id for template in with_document_templates[:1]]
+    template_matching_job_in = TemplateMatchingJobIn(
+        document_template_ids=template_ids,
+        workspace_id=None,
+    )
+    resp = client.post(
+        "/api/template-matching-job/",
+        json=template_matching_job_in.model_dump(mode="json"),
+    )
+    assert resp.status_code == 404
+    assert resp.json()["detail"] == "Workspace not found"
+
+
+def test_create_template_matching_job_with_invalid_workspace_id(
+    with_document_templates: list[DocumentTemplate],
+    client: TestClient
+) -> None:
+    template_ids = [template.id for template in with_document_templates[:1]]
+    template_matching_job_in = TemplateMatchingJobIn(
+        document_template_ids=template_ids,
+        workspace_id=99999,
+    )
+    resp = client.post(
+        "/api/template-matching-job/",
+        json=template_matching_job_in.model_dump(mode="json"),
+    )
+    assert resp.status_code == 404
+    assert resp.json()["detail"] == "Workspace not found"
+
+
 def test_get_template_matching_job(
     with_template_matching_jobs: list[TemplateMatchingJob], client: TestClient
 ) -> None:
     for job in with_template_matching_jobs:
         resp = client.get(f"/api/template-matching-job/{job.id}")
         assert resp.status_code == 200
-        assert resp.json() == TemplateMatchingJobOut.model_validate(job).model_dump(
+
+        resp_body = resp.json()
+        assert resp_body == TemplateMatchingJobOut.model_validate(job).model_dump(
             mode="json"
         )
+        assert resp_body["workspace"] is not None
+        assert resp_body["workspace"]["id"] == job.workspace_id
 
 
 def test_get_template_matching_job_results(
@@ -97,7 +136,8 @@ def test_get_template_matching_job_results(
     session: Session,
 ) -> None:
     for job in with_template_matching_jobs:
-        job.workspace_id = with_workspaces[0].id
+        ws = with_workspaces[0]
+        job.workspace_id = ws.id
         job.job_state = JobState.SUCCEEDED
         session.commit()
 
@@ -110,6 +150,44 @@ def test_get_template_matching_job_results(
             == set(job.document_template_ids)
         )
 
+
+def test_results_respect_workspace_data_spec(
+    with_template_matching_jobs: list[TemplateMatchingJob],
+    with_workspaces: list[Workspace],
+    client: TestClient,
+    session: Session,
+) -> None:
+    ws_pdf = next(
+        ws
+        for ws in with_workspaces
+        if ws.data_specification["file_type"] == "PDF"
+        and ws.data_specification["date_from"] is not None
+        and ws.data_specification["date_to"] is not None
+    )
+
+    job = with_template_matching_jobs[0]
+    job.workspace_id = ws_pdf.id
+    job.job_state = JobState.SUCCEEDED
+    session.commit()
+
+    resp = client.get(f"/api/template-matching-job/{job.id}/results")
+    assert resp.status_code == 200
+    resp_body = resp.json()
+
+    all_file_types = {
+        sample_result["file_type"]
+        for results in resp_body["results_per_template"]
+        for sample_result in results["sample_results"]
+    }
+    assert all_file_types == {"PDF"}
+
+    date_from = datetime.fromisoformat(ws_pdf.data_specification["date_from"]).date()
+    date_to = datetime.fromisoformat(ws_pdf.data_specification["date_to"]).date()
+
+    for result in resp_body["results_per_template"]:
+        for sample_result in result["sample_results"]:
+            created_at = datetime.fromisoformat(sample_result["created_at"]).date()
+            assert date_from <= created_at <= date_to
 
 
 def test_rerun_template_matching_job(
