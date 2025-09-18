@@ -50,8 +50,10 @@ def mock_job_results_with_data_spec(
         if data_specification.file_type
         else list(FileType)
     )
-    date_from = data_specification.date_from or date.today()
-    date_to = data_specification.date_to or date.today()
+
+    available_dates: list[datetime] | None = None
+    if data_specification.date_from and data_specification.date_to:
+        date_from, date_to = data_specification.date_from, data_specification.date_to
 
     num_days = (date_to - date_from + timedelta(days=1)).days
     available_dates = [
@@ -59,17 +61,19 @@ def mock_job_results_with_data_spec(
         for day in range(num_days)
     ]
 
-
     for template_id in template_ids:
         num_samples = random.randint(1, 100)
         sample_results: list[SampleResult] = []
         for _ in range(num_samples):
+            created_at = (
+                random.choice(available_dates) if available_dates else None
+            )
             sample_results.append(
                 ExtendedSampleResult(
                     sample_id=next_sample_id,
                     score=random.random(),
                     file_type=random.choice(available_file_types),
-                    created_at=random.choice(available_dates),
+                    created_at=created_at,
                 )
             )
             next_sample_id += 1

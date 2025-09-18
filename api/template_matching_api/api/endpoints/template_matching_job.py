@@ -12,8 +12,9 @@ from template_matching_api.api_models.template_matching_job import (
     JobState,
     TemplateMatchingJobResults,
 )
-from template_matching_api.db_model import TemplateMatchingJob
-from template_matching_api.jobs.template_matching_job import mock_job_results
+from template_matching_api.db_model import TemplateMatchingJob, Workspace
+from template_matching_api.api_models.data_specification import DataSpecification
+from template_matching_api.jobs.template_matching_job import mock_job_results_with_data_spec
 
 router = APIRouter()
 
@@ -44,6 +45,10 @@ def create_template_matching_job(
     template_matching_job_in: TemplateMatchingJobIn,
     session: Session = Depends(get_session),
 ) -> TemplateMatchingJobOut:
+    workspace = session.get(Workspace, template_matching_job_in.workspace_id)
+    if workspace is None:
+        raise HTTPException(status_code=404, detail="Workspace not found")
+
     job = TemplateMatchingJob(**template_matching_job_in.model_dump())
     session.add(job)
     session.flush()
@@ -79,7 +84,13 @@ def get_template_matching_job_results(
     if job is None or job.job_state != JobState.SUCCEEDED:
         raise HTTPException(status_code=404)
 
-    return mock_job_results(job)
+    data_spec_model = (
+        DataSpecification.model_validate(job.workspace.data_specification)
+        if job.workspace and job.workspace.data_specification
+        else DataSpecification()
+    )
+
+    return mock_job_results_with_data_spec(job, data_spec_model)
 
 
 @router.post(

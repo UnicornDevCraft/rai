@@ -4,6 +4,7 @@ from enum import StrEnum
 from pydantic import BaseModel, ConfigDict
 
 from template_matching_api.api_models.document_template import DocumentTemplateOut
+from template_matching_api.api_models.workspace import WorkspaceOut
 from template_matching_api.api_models.sample import SampleResult, ExtendedSampleResult
 
 
@@ -15,6 +16,7 @@ class JobState(StrEnum):
 
 
 class TemplateMatchingJobIn(BaseModel):
+    workspace_id: int | None
     document_template_ids: list[int]
 
 
@@ -26,6 +28,7 @@ class TemplateMatchingJobOut(BaseModel):
     job_state: JobState | None
     job_id: str | None
 
+    workspace: WorkspaceOut | None
     document_templates: list[DocumentTemplateOut]
 
 
