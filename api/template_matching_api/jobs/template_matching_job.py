@@ -1,5 +1,5 @@
 import random
-from datetime import date, datetime, timedelta
+from datetime import datetime, timedelta
 
 from template_matching_api.api_models.template_matching_job import (
     TemplateMatchingJobResults,

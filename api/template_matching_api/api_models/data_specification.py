@@ -3,7 +3,7 @@ from typing_extensions import Self
 from datetime import date
 from pydantic import BaseModel, field_validator, model_validator
 
-from .sample import FileType
+from template_matching_api.api_models.sample import FileType
 
 
 class DataSpecification(BaseModel):

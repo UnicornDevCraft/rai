@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from .endpoints import document_template, template_matching_job, workspace
+from template_matching_api.api.endpoints import document_template, template_matching_job, workspace
 
 api_router = APIRouter()
 api_router.include_router(document_template.router, prefix="/document-template", tags=["document-templates"])
