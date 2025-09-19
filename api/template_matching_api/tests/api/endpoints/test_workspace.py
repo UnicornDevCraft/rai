@@ -71,6 +71,37 @@ def test_create_workspace(client: TestClient) -> None:
     assert "created_at" in resp_json
 
 
+def test_create_workspace_invalid_file_type(client: TestClient) -> None:
+    resp = client.post(
+        "/api/workspace/",
+        json={
+            "name": "bad_ws",
+            "data_specification": {
+                "file_type": "TXT",
+                "date_from": "2024-01-01",
+                "date_to": "2024-02-01",
+            },
+        },
+    )
+    assert resp.status_code == 422
+    assert "file_type" in resp.json()["detail"][0]["loc"]
+
+
+def test_create_workspace_invalid_dates(client: TestClient) -> None:
+    resp = client.post(
+        "/api/workspace/",
+        json={
+            "name": "bad_ws",
+            "data_specification": {
+                "file_type": "PDF",
+                "date_from": "2100-01-01",
+                "date_to": "2100-02-01",
+            },
+        },
+    )
+    assert resp.status_code == 422
+
+
 def test_update_workspace(with_workspaces: list[Workspace], client: TestClient) -> None:
     ws = with_workspaces[0]
 
@@ -95,6 +126,21 @@ def test_update_workspace(with_workspaces: list[Workspace], client: TestClient) 
     resp_data = resp_get.json()
     assert resp_data["name"] == new_name
     assert resp_data["data_specification"] == new_spec
+
+
+def test_partial_update_workspace_name_only(
+    with_workspaces: list[Workspace], client: TestClient
+) -> None:
+    ws = with_workspaces[0]
+    new_name = "only_name_updated"
+
+    resp = client.patch(f"/api/workspace/{ws.id}", json={"name": new_name})
+    assert resp.status_code == 204
+
+    resp_get = client.get(f"/api/workspace/{ws.id}")
+    assert resp_get.json()["name"] == new_name
+    assert resp_get.json()["data_specification"] == ws.data_specification
+
 
 
 def test_delete_workspace(with_workspaces: list[Workspace], client: TestClient, session: Session) -> None:

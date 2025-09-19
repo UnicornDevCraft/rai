@@ -174,12 +174,9 @@ def test_results_respect_workspace_data_spec(
     assert resp.status_code == 200
     resp_body = resp.json()
 
-    all_file_types = {
-        sample_result["file_type"]
-        for results in resp_body["results_per_template"]
-        for sample_result in results["sample_results"]
-    }
-    assert all_file_types == {"PDF"}
+    for template_result in resp_body["results_per_template"]:
+        for sample_result in template_result["sample_results"]:
+            assert sample_result["file_type"] == "PDF"
 
     date_from = datetime.fromisoformat(ws_pdf.data_specification["date_from"]).date()
     date_to = datetime.fromisoformat(ws_pdf.data_specification["date_to"]).date()
